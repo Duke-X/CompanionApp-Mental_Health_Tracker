@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="firebase_api_key">AIzaSyCT8Lg-8n9o1JgYmwkJDDF79ciMGC0Wmyg</string>
+    <string name="firebase_application_id">1:672949771239:android:f6e1d9173d3aa378057b42</string>
+    <!-- Add other Firebase configuration values here -->
+</resources>

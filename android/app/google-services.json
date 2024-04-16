@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "672949771239",
+    "project_id": "companion-app-dd301",
+    "storage_bucket": "companion-app-dd301.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:672949771239:android:f6e1d9173d3aa378057b42",
+        "android_client_info": {
+          "package_name": "com.example.demo_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCT8Lg-8n9o1JgYmwkJDDF79ciMGC0Wmyg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
