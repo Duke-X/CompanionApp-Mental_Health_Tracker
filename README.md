@@ -1,6 +1,6 @@
-# demo_app
+# Flutter-Firebase App
 
-A new Flutter project.
+A new Flutter project. A mental Health tracker known as Companion App, used to check the mental health of the user, helps them overcome it, using different methods.
 
 ## Getting Started
 
