@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'reschedule_appointment.dart';
+import 'package:table_calendar/table_calendar.dart';
 
 class UpcomingSchedule extends StatelessWidget {
   // Define the list of doctors outside the class and make it static const
@@ -167,7 +169,13 @@ class UpcomingSchedule extends StatelessWidget {
                           ),
                         ),
                         InkWell(
-                          onTap: (){},
+                          onTap: (){
+                            // Navigate to the Calendar page
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const Calendar()),
+                            );
+                          },
                           child: Container(
                             width: 150,
                             padding: const EdgeInsets.symmetric(vertical: 12),
