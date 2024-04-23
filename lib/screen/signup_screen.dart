@@ -7,7 +7,7 @@
 // import 'package:cloud_firestore/cloud_firestore.dart';
 //
 // class SignUpScreen extends StatefulWidget {
-//   const SignUpScreen({super.key});
+//   const SignUpScreen({Key? key}) : super(key: key);
 //
 //   @override
 //   State<SignUpScreen> createState() => _SignUpScreenState();
@@ -195,9 +195,10 @@
 //                       SizedBox(
 //                         width: double.infinity,
 //                         child: ElevatedButton(
-//                           onPressed: () {
+//                           onPressed: () async {
 //                             if (_formSignupKey.currentState!.validate() && agreePersonalData) {
-//                               _handleSignUp();
+//                               await _handleSignUp();
+//                               _showRegistrationPopup();
 //                             } else if (!agreePersonalData) {
 //                               _showSnackBar('Please agree to the processing of personal data');
 //                             }
@@ -243,18 +244,10 @@
 //                       const Row(
 //                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
 //                         children: [
-//                           IconButton(
-//                               icon: Icon(FontAwesomeIcons.facebook),
-//                               onPressed: null),
-//                           IconButton(
-//                               icon: Icon(FontAwesomeIcons.twitter),
-//                               onPressed: null),
-//                           IconButton(
-//                               icon: Icon(FontAwesomeIcons.instagram),
-//                               onPressed: null),
-//                           IconButton(
-//                               icon: Icon(FontAwesomeIcons.google),
-//                               onPressed: null),
+//                           IconButton(icon: Icon(FontAwesomeIcons.facebook), onPressed:null),
+//                           IconButton(icon: Icon(FontAwesomeIcons.twitter), onPressed:null),
+//                           IconButton(icon: Icon(FontAwesomeIcons.instagram), onPressed:null),
+//                           IconButton(icon: Icon(FontAwesomeIcons.google), onPressed:null),
 //                         ],
 //                       ),
 //                       const SizedBox(
@@ -302,7 +295,7 @@
 //     );
 //   }
 //
-//   void _handleSignUp() async {
+//   Future<void> _handleSignUp() async {
 //     try {
 //       final newUser = await _auth.createUserWithEmailAndPassword(
 //           email: email, password: password);
@@ -315,7 +308,6 @@
 //         'email': email,
 //       });
 //
-//       _showSnackBar('Sign-up successful');
 //     } catch (e) {
 //       _showSnackBar('Error: $e');
 //     }
@@ -326,6 +318,31 @@
 //       SnackBar(
 //         content: Text(message),
 //       ),
+//     );
+//   }
+//
+//   void _showRegistrationPopup() {
+//     showDialog(
+//       context: context,
+//       builder: (BuildContext context) {
+//         return AlertDialog(
+//           title: const Text('Registration Completed'),
+//           content: const Text('Your account has been created successfully.'),
+//           actions: <Widget>[
+//             TextButton(
+//               onPressed: () {
+//                 Navigator.pushReplacement(
+//                   context,
+//                   MaterialPageRoute(
+//                     builder: (BuildContext context) => const SignInScreen(),
+//                   ),
+//                 );
+//               },
+//               child: const Text('OK'),
+//             ),
+//           ],
+//         );
+//       },
 //     );
 //   }
 // }
@@ -348,12 +365,32 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _formSignupKey = GlobalKey<FormState>();
   final _auth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
-  final GlobalKey<ScaffoldMessengerState> _scaffoldKey = GlobalKey<ScaffoldMessengerState>();
+  final GlobalKey<ScaffoldMessengerState> _scaffoldKey =
+  GlobalKey<ScaffoldMessengerState>();
+  String? selectedPreviousIllness;
   bool agreePersonalData = true;
   String fullName = '';
   String email = '';
   String password = '';
-
+  String confirmPassword = '';
+  String uhid = '';
+  String previousIllness = '';
+  String medication = '';
+  List<String> previousIllnesses = [
+    'No Previous Illness',
+    'Depression',
+    'Anxiety',
+    'Bipolar Disorder',
+    'Schizophrenia',
+    'PTSD',
+    'Other'
+  ];
+  TextEditingController medicationController = TextEditingController();
+  @override
+  void initState() {
+    super.initState();
+    selectedPreviousIllness = previousIllnesses[0]; // Set initial value here
+  }
   @override
   Widget build(BuildContext context) {
     return CustomScaffold(
@@ -465,6 +502,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Please enter Password';
+                          } else if (!RegExp(r'^[a-zA-Z0-9_@#*]+$').hasMatch(value)) {
+                            return 'Password can only contain alphabets, numbers, _, @, #, *';
                           }
                           return null;
                         },
@@ -490,6 +529,144 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         onChanged: (value) {
                           password = value;
                         },
+                      ),
+
+                      const SizedBox(
+                        height: 25.0,
+                      ),
+                      TextFormField(
+                        obscureText: true,
+                        obscuringCharacter: '*',
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter Confirm Password';
+                          } else if (value != password) {
+                            return 'Passwords do not match';
+                          }
+                          return null;
+                        },
+                        decoration: InputDecoration(
+                          label: const Text('Confirm Password'),
+                          hintText: 'Confirm Password',
+                          hintStyle: const TextStyle(
+                            color: Colors.black26,
+                          ),
+                          border: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                              color: Colors.black12,
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                              color: Colors.black12,
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        onChanged: (value) {
+                          confirmPassword = value;
+                        },
+                      ),
+                      const SizedBox(
+                        height: 25.0,
+                      ),
+                      TextFormField(
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter UHID';
+                          }
+                          return null;
+                        },
+                        decoration: InputDecoration(
+                          label: const Text('UHID'),
+                          hintText: 'Enter UHID',
+                          hintStyle: const TextStyle(
+                            color: Colors.black26,
+                          ),
+                          border: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                              color: Colors.black12,
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                              color: Colors.black12,
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        onChanged: (value) {
+                          uhid = value;
+                        },
+                      ),
+                      const SizedBox(
+                        height: 25.0,
+                      ),
+                      DropdownButtonFormField<String>(
+                        value: selectedPreviousIllness,
+                        onChanged: (String? value) {
+                          setState(() {
+                            selectedPreviousIllness = value!;
+                          });
+                        },
+                        decoration: InputDecoration(
+                          labelText: 'Previous Mental Illness',
+                          border: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                              color: Colors.black12,
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                              color: Colors.black12,
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        items: previousIllnesses
+                            .map<DropdownMenuItem<String>>((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(
+                        height: 25.0,
+                      ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: medicationController,
+                              decoration: InputDecoration(
+                                labelText: 'Medications (if any)',
+                                hintText: 'Enter Medications',
+                                hintStyle: const TextStyle(
+                                  color: Colors.black26,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderSide: const BorderSide(
+                                    color: Colors.black12,
+                                  ),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderSide: const BorderSide(
+                                    color: Colors.black12,
+                                  ),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              onChanged: (value) {
+                                medication = value;
+                              },
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(
                         height: 25.0,
@@ -527,11 +704,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         width: double.infinity,
                         child: ElevatedButton(
                           onPressed: () async {
-                            if (_formSignupKey.currentState!.validate() && agreePersonalData) {
+                            if (_formSignupKey.currentState!.validate() &&
+                                agreePersonalData) {
                               await _handleSignUp();
                               _showRegistrationPopup();
                             } else if (!agreePersonalData) {
-                              _showSnackBar('Please agree to the processing of personal data');
+                              _showSnackBar(
+                                  'Please agree to the processing of personal data');
                             }
                           },
                           child: const Text('Sign up'),
@@ -575,10 +754,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       const Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          IconButton(icon: Icon(FontAwesomeIcons.facebook), onPressed:null),
-                          IconButton(icon: Icon(FontAwesomeIcons.twitter), onPressed:null),
-                          IconButton(icon: Icon(FontAwesomeIcons.instagram), onPressed:null),
-                          IconButton(icon: Icon(FontAwesomeIcons.google), onPressed:null),
+                          IconButton(
+                              icon: Icon(FontAwesomeIcons.facebook),
+                              onPressed: null),
+                          IconButton(
+                              icon: Icon(FontAwesomeIcons.twitter),
+                              onPressed: null),
+                          IconButton(
+                              icon: Icon(FontAwesomeIcons.instagram),
+                              onPressed: null),
+                          IconButton(
+                              icon: Icon(FontAwesomeIcons.google),
+                              onPressed: null),
                         ],
                       ),
                       const SizedBox(
@@ -631,13 +818,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
       final newUser = await _auth.createUserWithEmailAndPassword(
           email: email, password: password);
 
-      await _firestore
-          .collection('users')
-          .doc(newUser.user!.uid)
-          .set({
+      await _firestore.collection('users').doc(newUser.user!.uid).set({
         'fullName': fullName,
         'email': email,
+        'uhid': uhid,
+        'password': password,
+        'previousIllness': previousIllness,
+        'medication': medication,
       });
+
+      // Send email verification
+      await newUser.user!.sendEmailVerification();
 
     } catch (e) {
       _showSnackBar('Error: $e');
@@ -658,7 +849,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Registration Completed'),
-          content: const Text('Your account has been created successfully.'),
+          content: const Text('Your account has been created successfully. '
+              'Please verify your email to continue.'),
           actions: <Widget>[
             TextButton(
               onPressed: () {
@@ -677,3 +869,4 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 }
+

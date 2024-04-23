@@ -2,15 +2,15 @@
 // import 'package:demo_app/widgets/custom_scaffold.dart';
 // import 'package:flutter/material.dart';
 // import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-// // import 'package:login_signup/screens/signup_screen.dart';
-// // import 'package:login_signup/widgets/custom_scaffold.dart';
 // import 'package:firebase_auth/firebase_auth.dart';
 // import 'package:cloud_firestore/cloud_firestore.dart';
 //
 // import '../theme/theme.dart';
+// import 'home_screen.dart';
+// import 'questions.dart'; // Import your questions page widget
 //
 // class SignInScreen extends StatefulWidget {
-//   const SignInScreen({super.key});
+//   const SignInScreen({Key? key}) : super(key: key);
 //
 //   @override
 //   State<SignInScreen> createState() => _SignInScreenState();
@@ -19,6 +19,18 @@
 // class _SignInScreenState extends State<SignInScreen> {
 //   final _formSignInKey = GlobalKey<FormState>();
 //   bool rememberPassword = true;
+//
+//   // Sample positive mental health quotes
+//   final List<String> positiveQuotes = [
+//     "You are enough just as you are.",
+//     "Every day may not be good, but there's something good in every day.",
+//     "You're doing great!",
+//     "Your mental health is a priority.",
+//     "Take it one day at a time.",
+//     "You're stronger than you think.",
+//     "You're not alone.",
+//   ];
+//
 //   @override
 //   Widget build(BuildContext context) {
 //     return CustomScaffold(
@@ -162,16 +174,14 @@
 //                           onPressed: () {
 //                             if (_formSignInKey.currentState!.validate() &&
 //                                 rememberPassword) {
-//                               ScaffoldMessenger.of(context).showSnackBar(
-//                                 const SnackBar(
-//                                   content: Text('Processing Data'),
-//                                 ),
-//                               );
+//                               // Validate user login credentials here
+//                               _handleSignIn();
 //                             } else if (!rememberPassword) {
 //                               ScaffoldMessenger.of(context).showSnackBar(
 //                                 const SnackBar(
-//                                     content: Text(
-//                                         'Please agree to the processing of personal data')),
+//                                   content: Text(
+//                                       'Please agree to the processing of personal data'),
+//                                 ),
 //                               );
 //                             }
 //                           },
@@ -216,10 +226,18 @@
 //                       const Row(
 //                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
 //                         children: [
-//                           IconButton(icon: Icon(FontAwesomeIcons.facebookF), onPressed:null),
-//                           IconButton(icon: Icon(FontAwesomeIcons.twitter), onPressed:null),
-//                           IconButton(icon: Icon(FontAwesomeIcons.instagram), onPressed:null),
-//                           IconButton(icon: Icon(FontAwesomeIcons.google), onPressed:null),
+//                           IconButton(
+//                               icon: Icon(FontAwesomeIcons.facebookF),
+//                               onPressed: null),
+//                           IconButton(
+//                               icon: Icon(FontAwesomeIcons.twitter),
+//                               onPressed: null),
+//                           IconButton(
+//                               icon: Icon(FontAwesomeIcons.instagram),
+//                               onPressed: null),
+//                           IconButton(
+//                               icon: Icon(FontAwesomeIcons.google),
+//                               onPressed: null),
 //                         ],
 //                       ),
 //                       const SizedBox(
@@ -240,7 +258,7 @@
 //                               Navigator.push(
 //                                 context,
 //                                 MaterialPageRoute(
-//                                   builder: (e) => const SignUpScreen(),
+//                                   builder: (context) => const SignUpScreen(),
 //                                 ),
 //                               );
 //                             },
@@ -267,6 +285,66 @@
 //       ),
 //     );
 //   }
+//
+//   void _handleSignIn() {
+//     // Assuming Firebase authentication is used
+//     // Perform authentication here
+//
+//     // Show positive thought popup
+//     _showPositiveThoughtPopup();
+//
+//     // Then navigate to questions page
+//     _navigateToQuestionsPage();
+//   }
+//
+//   void _showPositiveThoughtPopup() {
+//     // Retrieve a random positive mental health quote
+//     final String quote = positiveQuotes[
+//     DateTime.now().millisecondsSinceEpoch % positiveQuotes.length];
+//     showDialog(
+//       context: context,
+//       builder: (BuildContext context) {
+//         return AlertDialog(
+//           title: const Text('Positive Thought'),
+//           content: Column(
+//             mainAxisSize: MainAxisSize.min,
+//             crossAxisAlignment: CrossAxisAlignment.start,
+//             children: [
+//               const Text('Thank you for Signing in!'),
+//               const SizedBox(height: 5),
+//               const Text('Here\'s a positive thought for you:'),
+//               const SizedBox(height: 5),
+//               Text(
+//                 quote,
+//                 style: const TextStyle(fontStyle: FontStyle.italic),
+//               ),
+//             ],
+//           ),
+//           actions: <Widget>[
+//             TextButton(
+//               onPressed: () {
+//                 Navigator.pop(context); // Close the dialog
+//               },
+//               child: const Text('OK'),
+//             ),
+//           ],
+//         );
+//       },
+//     );
+//   }
+//
+//   void _navigateToQuestionsPage() {
+//     // Create a GlobalKey instance
+//     GlobalKey<_SignInScreenState> signInScreenStateKey = GlobalKey();
+//
+//     // Navigate to questions page
+//     Navigator.pushReplacement(
+//       context,
+//       MaterialPageRoute(
+//         builder: (BuildContext context) => Questions(key: signInScreenStateKey), // Pass GlobalKey instance as key
+//       ),
+//     );
+//   }
 // }
 import 'package:demo_app/screen/signup_screen.dart';
 import 'package:demo_app/widgets/custom_scaffold.dart';
@@ -288,18 +366,13 @@ class SignInScreen extends StatefulWidget {
 
 class _SignInScreenState extends State<SignInScreen> {
   final _formSignInKey = GlobalKey<FormState>();
+  final _auth = FirebaseAuth.instance;
+  final GlobalKey<ScaffoldMessengerState> _scaffoldKey =
+  GlobalKey<ScaffoldMessengerState>();
   bool rememberPassword = true;
-
-  // Sample positive mental health quotes
-  final List<String> positiveQuotes = [
-    "You are enough just as you are.",
-    "Every day may not be good, but there's something good in every day.",
-    "You're doing great!",
-    "Your mental health is a priority.",
-    "Take it one day at a time.",
-    "You're stronger than you think.",
-    "You're not alone.",
-  ];
+  String email = '';
+  String password = '';
+  String confirmPassword = '';
 
   @override
   Widget build(BuildContext context) {
@@ -366,6 +439,9 @@ class _SignInScreenState extends State<SignInScreen> {
                             borderRadius: BorderRadius.circular(10),
                           ),
                         ),
+                        onChanged: (value) {
+                          email = value;
+                        },
                       ),
                       const SizedBox(
                         height: 25.0,
@@ -398,6 +474,46 @@ class _SignInScreenState extends State<SignInScreen> {
                             borderRadius: BorderRadius.circular(10),
                           ),
                         ),
+                        onChanged: (value) {
+                          password = value;
+                        },
+                      ),
+                      const SizedBox(
+                        height: 25.0,
+                      ),
+                      TextFormField(
+                        obscureText: true,
+                        obscuringCharacter: '*',
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter Confirm Password';
+                          } else if (value != password) {
+                            return 'Passwords do not match';
+                          }
+                          return null;
+                        },
+                        decoration: InputDecoration(
+                          label: const Text('Confirm Password'),
+                          hintText: 'Confirm Password',
+                          hintStyle: const TextStyle(
+                            color: Colors.black26,
+                          ),
+                          border: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                              color: Colors.black12, // Default border color
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                              color: Colors.black12, // Default border color
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        onChanged: (value) {
+                          confirmPassword = value;
+                        },
                       ),
                       const SizedBox(
                         height: 25.0,
@@ -560,47 +676,8 @@ class _SignInScreenState extends State<SignInScreen> {
     // Assuming Firebase authentication is used
     // Perform authentication here
 
-    // Show positive thought popup
-    _showPositiveThoughtPopup();
-
     // Then navigate to questions page
     _navigateToQuestionsPage();
-  }
-
-  void _showPositiveThoughtPopup() {
-    // Retrieve a random positive mental health quote
-    final String quote = positiveQuotes[
-    DateTime.now().millisecondsSinceEpoch % positiveQuotes.length];
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Positive Thought'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('Thank you for Signing in!'),
-              const SizedBox(height: 5),
-              const Text('Here\'s a positive thought for you:'),
-              const SizedBox(height: 5),
-              Text(
-                quote,
-                style: const TextStyle(fontStyle: FontStyle.italic),
-              ),
-            ],
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context); // Close the dialog
-              },
-              child: const Text('OK'),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   void _navigateToQuestionsPage() {
@@ -611,7 +688,7 @@ class _SignInScreenState extends State<SignInScreen> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (BuildContext context) => Questions(key: signInScreenStateKey), // Pass GlobalKey instance as key
+        builder: (BuildContext context) => Questions(key: signInScreenStateKey), // Pass GlobalKey instance as key to Questions page
       ),
     );
   }
