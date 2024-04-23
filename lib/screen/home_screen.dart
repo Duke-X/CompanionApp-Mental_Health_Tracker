@@ -1,10 +1,11 @@
-import 'package:demo_app/screen/video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
-import 'package:url_launcher/url_launcher.dart';
+// import 'package:hover/hover.dart';
+// import 'package:url_launcher/url_launcher.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart' as yt;
-import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
+
 import 'appointment_screen.dart';
+import 'video_player.dart';
 
 class HomeScreen extends StatelessWidget {
   final videoUrls = [
@@ -77,11 +78,27 @@ class HomeScreen extends StatelessWidget {
                         ),
                       ),
                       InkWell(
-                        onTap: (){
-                          FlutterPhoneDirectCaller.callNumber('+918194800216');
-                          // _makeEmergencyCall();
-                        },
-                        child: const Icon(Icons.notifications_active),
+                        onTap: _makeEmergencyCall,
+                        child: MouseRegion(
+                          onHover: (event) {
+                            showDialog(
+                              context: context,
+                              builder: (context) {
+                                return const AlertDialog(
+                                  title: Text('We are here for you buddy!'),
+                                  content: Text('Call us anytime!'),
+                                );
+                              },
+                            );
+                          },
+                          onExit: (event) {
+                            Navigator.of(context).pop();
+                          },
+                          child: const Icon(
+                            Icons.notifications_active,
+                            color: Colors.red,
+                          ),
+                        ),
                       ),
                       const CircleAvatar(
                         radius: 25,
@@ -414,11 +431,11 @@ class HomeScreen extends StatelessWidget {
   }
 
   void _makeEmergencyCall() async {
-    const url = 'tel:8194800216'; // Replace '911' with your specific emergency number
-    if (await canLaunchUrl(Uri.parse(url))) {
-      await launchUrl(Uri.parse(url));
-    } else {
-      throw 'Could not launch $url';
+    const phoneNumber = '+918194800216';
+    try {
+      await FlutterPhoneDirectCaller.callNumber(phoneNumber);
+    } catch (e) {
+      throw 'Could not make the call: $e';
     }
   }
 }
