@@ -823,7 +823,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         'email': email,
         'uhid': uhid,
         'password': password,
-        'previousIllness': previousIllness,
+        'previousIllness': selectedPreviousIllness,
         'medication': medication,
       });
 
