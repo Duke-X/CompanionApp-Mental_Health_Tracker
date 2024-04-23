@@ -22,7 +22,7 @@ class _CalendarState extends State<Calendar> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Calendar',
+          'Book Appointment',
           style: TextStyle(
             fontWeight: FontWeight.w500, // Set font weight to 500
           ),
